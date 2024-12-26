@@ -1,2 +1,89 @@
-<h1>Gifsto an open source website hosted on Github pages to store gifs.</h1>
-<h2>Created by Thph793</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple and efficient site to store GIFs and other files.">
+    <meta name="author" content="Thph793">
+    <meta property="og:title" content="Gifsto - GIF Storage">
+    <meta property="og:description" content="A simple and efficient site to store GIFs and other files.">
+    <meta property="og:image" content="https://gifsto.github.io/steve.gif">
+    <meta property="og:url" content="https://gifsto.github.io/">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Gifsto - GIF Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .file-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 150px;
+        }
+        .file-item img {
+            max-width: 100%;
+            max-height: 100px;
+            object-fit: cover;
+        }
+        .file-item a {
+            display: block;
+            margin-top: 5px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to GIF Storage - or for short Gifsto a simple, open source website hosted on Github pages to store gifs.</h1>
+    <h2>Created by Thph793</h2>
+    <p>Below is a listing of all files currently hosted on this site:</p>
+    <div id="file-list" class="file-list"></div>
+
+    <script>
+        const repoOwner = "gifsto"; 
+        const repoName = "gifsto.github.io"; 
+        const branch = "main"; 
+
+        async function fetchFiles() {
+            const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                document.getElementById("file-list").innerHTML = "Failed to fetch file list.";
+                return;
+            }
+
+            const files = await response.json();
+            const fileList = document.getElementById("file-list");
+            fileList.innerHTML = "";
+
+            files.forEach(file => {
+                if (file.type === "file") {
+                    const fileItem = document.createElement("div");
+                    fileItem.classList.add("file-item");
+
+                    const preview = file.name.endsWith(".gif") || file.name.endsWith(".jpg") || file.name.endsWith(".png")
+                        ? `<img src="${file.download_url}" alt="${file.name}">`
+                        : "";
+
+                    fileItem.innerHTML = `
+                        ${preview}
+                        <a href="${file.download_url}" target="_blank">${file.name}</a>
+                        <a href="${file.download_url}" download>Download</a>
+                    `;
+                    fileList.appendChild(fileItem);
+                }
+            });
+        }
+
+        fetchFiles();
+    </script>
+</body>
+</html>
