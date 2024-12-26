@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple and efficient site to store GIFs and other files.">
+    <meta name="description" content="A simple and efficient site to store and share GIFs and other files.">
     <meta name="author" content="Thph793">
     <meta property="og:title" content="Gifsto - GIF Storage">
-    <meta property="og:description" content="A simple and efficient site to store GIFs and other files.">
+    <meta property="og:description" content="A simple and efficient site to store and share GIFs and other files.">
     <meta property="og:image" content="https://gifsto.github.io/steve.gif">
     <meta property="og:url" content="https://gifsto.github.io/">
     <meta name="twitter:card" content="summary_large_image">
@@ -39,10 +39,22 @@
             text-decoration: none;
             color: #007BFF;
         }
+        .file-item button {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .file-item button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to GIF Storage - or for short Gifsto a simple, open source website hosted on Github pages to store gifs.</h1>
+    <h1>Welcome to GIF Storage - or for short Gifsto, a simple, open source website hosted on Github Pages to store gifs.</h1>
     <h2>Created by Thph793</h2>
     <p>Below is a listing of all files currently hosted on this site:</p>
     <div id="file-list" class="file-list"></div>
@@ -65,7 +77,8 @@
             fileList.innerHTML = "";
 
             files.forEach(file => {
-                if (file.type === "file") {
+                // Exclude `readme.md` and `index.html`
+                if (file.type === "file" && file.name !== "readme.md" && file.name !== "index.html") {
                     const fileItem = document.createElement("div");
                     fileItem.classList.add("file-item");
 
@@ -76,11 +89,33 @@
                     fileItem.innerHTML = `
                         ${preview}
                         <a href="${file.download_url}" target="_blank">${file.name}</a>
-                        <a href="${file.download_url}" download>Download</a>
+                        <button onclick="copyLink('${file.name}')">Copy Link</button>
+                        <button onclick="copyFile('${file.download_url}')">Copy File</button>
                     `;
                     fileList.appendChild(fileItem);
                 }
             });
+        }
+
+        function copyLink(fileName) {
+            const link = `https://gifsto.github.io/${fileName}`;
+            navigator.clipboard.writeText(link).then(() => {
+                alert(`Link copied: ${link}`);
+            });
+        }
+
+        function copyFile(fileUrl) {
+            fetch(fileUrl)
+                .then(response => response.text())
+                .then(data => {
+                    navigator.clipboard.writeText(data).then(() => {
+                        alert('File content copied to clipboard!');
+                    });
+                })
+                .catch(error => {
+                    alert('Failed to copy file content.');
+                    console.error(error);
+                });
         }
 
         fetchFiles();
