@@ -51,18 +51,27 @@
         .file-item button:hover {
             background-color: #0056b3;
         }
+        #search-bar {
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
     <h1>Welcome to GIF Storage - or for short Gifsto, a simple, open source website hosted on Github Pages to store gifs.</h1>
     <h2>Created by Thph793</h2>
     <p>Below is a listing of all files currently hosted on this site:</p>
+    <input type="text" id="search-bar" placeholder="Search for files..." oninput="filterFiles()" />
     <div id="file-list" class="file-list"></div>
 
     <script>
         const repoOwner = "gifsto"; 
         const repoName = "gifsto.github.io"; 
         const branch = "main"; 
+        let filesData = [];
 
         async function fetchFiles() {
             const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
@@ -72,11 +81,11 @@
                 return;
             }
 
-            const files = await response.json();
+            filesData = await response.json();
             const fileList = document.getElementById("file-list");
             fileList.innerHTML = "";
 
-            files.forEach(file => {
+            filesData.forEach(file => {
                 // Exclude `README.md` and `index.html`
                 if (file.type === "file" && file.name !== "README.md" && file.name !== "index.html") {
                     const fileItem = document.createElement("div");
@@ -93,6 +102,33 @@
                         <button onclick="copyLink('${file.name}')">Copy Link</button>
                     `;
                     fileList.appendChild(fileItem);
+                }
+            });
+        }
+
+        function filterFiles() {
+            const searchQuery = document.getElementById("search-bar").value.toLowerCase();
+            const fileList = document.getElementById("file-list");
+            fileList.innerHTML = "";
+
+            filesData.forEach(file => {
+                if (file.type === "file" && file.name !== "README.md" && file.name !== "index.html") {
+                    if (file.name.toLowerCase().includes(searchQuery)) {
+                        const fileItem = document.createElement("div");
+                        fileItem.classList.add("file-item");
+
+                        const preview = file.name.endsWith(".gif") || file.name.endsWith(".jpg") || file.name.endsWith(".png")
+                            ? `<img src="${file.download_url}" alt="${file.name}">`
+                            : "";
+
+                        fileItem.innerHTML = `
+                            ${preview}
+                            <a href="${file.download_url}" target="_blank">${file.name}</a>
+                            <button onclick="downloadFile('${file.download_url}')">Download</button>
+                            <button onclick="copyLink('${file.name}')">Copy Link</button>
+                        `;
+                        fileList.appendChild(fileItem);
+                    }
                 }
             });
         }
