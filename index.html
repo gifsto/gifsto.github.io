@@ -77,8 +77,8 @@
             fileList.innerHTML = "";
 
             files.forEach(file => {
-                // Exclude `README.md` and `index.html`
-                if (file.type === "file" && file.name !== "README.md" && file.name !== "index.html") {
+                // Exclude `readme.md` and `index.html`
+                if (file.type === "file" && file.name !== "readme.md" && file.name !== "index.html") {
                     const fileItem = document.createElement("div");
                     fileItem.classList.add("file-item");
 
@@ -90,7 +90,7 @@
                         ${preview}
                         <a href="${file.download_url}" target="_blank">${file.name}</a>
                         <button onclick="copyLink('${file.name}')">Copy Link</button>
-                        <button onclick="copyFile('${file.download_url}')">Copy File</button>
+                        <button onclick="copyFile('${file.download_url}', '${file.name}')">Copy File</button>
                     `;
                     fileList.appendChild(fileItem);
                 }
@@ -104,18 +104,27 @@
             });
         }
 
-        function copyFile(fileUrl) {
-            fetch(fileUrl)
-                .then(response => response.text())
-                .then(data => {
-                    navigator.clipboard.writeText(data).then(() => {
-                        alert('File content copied to clipboard!');
+        async function copyFile(fileUrl, fileName) {
+            try {
+                const response = await fetch(fileUrl);
+                const blob = await response.blob();  // Fetch the file as a Blob
+
+                // Check if ClipboardItem API is supported
+                if ('ClipboardItem' in window) {
+                    const clipboardItem = new ClipboardItem({
+                        [blob.type]: blob
                     });
-                })
-                .catch(error => {
-                    alert('Failed to copy file content.');
-                    console.error(error);
-                });
+
+                    // Write the blob to the clipboard
+                    await navigator.clipboard.write([clipboardItem]);
+                    alert('File copied to clipboard!');
+                } else {
+                    alert('ClipboardItem API is not supported by your browser.');
+                }
+            } catch (error) {
+                alert('Failed to copy the file.');
+                console.error(error);
+            }
         }
 
         fetchFiles();
